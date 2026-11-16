@@ -52,13 +52,13 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip check
 ```
 
-后续在 `tests/` 添加测试后，可执行：
+在项目根目录运行接口测试（需要本机 PostgreSQL 运行，且 `.env` 已配置）：
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest
 ```
 
-当前尚未添加测试用例，直接运行 pytest 会提示没有收集到测试。
+测试通过 `tests/conftest.py` 为每个用例创建独立的临时知识库表，并在结束后回滚，不修改项目已有的知识库记录。覆盖创建、查询、修改、删除、参数校验和记录不存在时的 404 响应。
 
 ## VS Code
 
