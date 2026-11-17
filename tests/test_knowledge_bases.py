@@ -137,8 +137,55 @@ def test_create_name_too_long():
 def test_create_name_at_limit():
     reponse = client.post("/knowledge-bases", json={"name":"a"*50})
     assert reponse.status_code == 201
-    data = reponse.json()
-    assert data["name"] == "a"*50
+    assert reponse.json()["name"] == "a" * 50
+
+
+def test_list_knowledge_bases_pagination():
+    created = []
+    for index in range(5):
+        response = client.post(
+            "/knowledge-bases",
+            json={"name": f"分页测试资料{index}"},
+        )
+        assert response.status_code == 201
+        created.append(response.json())
+
+    for offset in (0, 2, 4, 5):
+        response = client.get(
+            "/knowledge-bases",
+            params={"limit": 2, "offset": offset},
+        )
+        assert response.status_code == 200
+        assert response.json() == created[offset:offset + 2]
+
+def test_search_knowledge_bases():
+    created = []
+
+    # 准备两条匹配、一条不匹配的数据
+    for name in ("Python基础", "Python后端", "Java基础"):
+        response = client.post(
+            "/knowledge-bases",
+            json={"name": name},
+        )
+        assert response.status_code == 201
+        created.append(response.json())
+
+    # 用小写 python 搜索大写 Python
+    response = client.get(
+        "/knowledge-bases",
+        params={"keyword": "python"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == created[:2]
+
+@pytest.mark.parametrize(
+    "params",
+    [{"limit": 0}, {"limit": 101}, {"offset": -1}],
+)
+def test_list_invalid_pagination(params):
+    response = client.get("/knowledge-bases", params=params)
+    assert response.status_code == 422
 
 @pytest.mark.parametrize("method", ["GET", "PUT", "DELETE"])
 def test_missing_knowledge_base(method):

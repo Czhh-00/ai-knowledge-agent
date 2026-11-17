@@ -2,7 +2,7 @@ from contextlib import contextmanager
 
 import pytest
 
-from app import main
+from app.routers import knowledge_bases
 from app.database import get_connection
 
 
@@ -28,5 +28,5 @@ def isolated_database(monkeypatch):
                 with connection.transaction():
                     yield connection
 
-            monkeypatch.setattr(main, "get_connection", test_connection)
+            monkeypatch.setattr(knowledge_bases, "get_connection", test_connection)
             yield
